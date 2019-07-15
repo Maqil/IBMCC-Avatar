@@ -11,8 +11,140 @@ using System.Text.RegularExpressions;
 using IBM.Watson.SpeechToText.V1;
 using IBM.Watson.Assistant.V2;
 using IBM.Watson.Assistant.V2.Model;
+using IBM.Cloud.SDK.DataTypes;
 using IBM.Watsson.Examples;
 using System;
+using System.Net.Http;
+using System.Text;
+using UnityEngine.Networking;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Security.Cryptography;
+
+public class HeartDiseaseContext{
+    public string cp;
+    public int trestbps;
+    public int chol;
+    public string fbs;
+    public int restecg;
+    public int thalach;
+    public string exang;
+    public int oldpeak;
+    public int slope;
+    public int ca;
+    public string thal;
+    public string sex;
+    public int age;
+}
+
+public class HeartDiseaseModel{
+    public int cp;
+    public int trestbps;
+    public int chol;
+    public int fbs;
+    public int restecg;
+    public int thalach;
+    public int exang;
+    public int oldpeak;
+    public int slope;
+    public int ca;
+    public int thal;
+    public int sex_male;
+    public int age;
+
+    public HeartDiseaseModel(HeartDiseaseContext context)
+    {
+        switch(context.cp.ToLower())
+        {
+            case "typical angina":
+                cp = 0;
+            break;
+            case "atypical angina":
+                cp = 1;
+            break;
+            case "non-anginal":
+                cp = 2;
+            break;
+            case "asymptomatic":
+                cp = 3;
+            break;
+            default:
+             cp = 0;
+            break;
+        }
+        trestbps = context.trestbps;
+        chol = context.chol;
+        switch(context.fbs.ToLower())
+        {
+            case "yes":
+                fbs = 1;
+            break;
+            case "no":
+                fbs = 0;
+            break;
+            default:
+                fbs = 0;
+            break;
+        }
+        restecg = context.restecg;
+        thalach = context.thalach;
+        switch(context.exang.ToLower())
+        {
+            case "yes":
+                exang = 1;
+            break;
+            case "no":
+                exang = 0;
+            break;
+            default:
+                exang = 0;
+            break; 
+        }
+        oldpeak = context.oldpeak;
+        slope = context.slope;
+        ca = context.ca;
+        switch(context.thal.ToLower())
+        {
+            case "none":
+                thal = 0;
+            break;
+            case "reversible":
+                thal = 1;
+            break;
+            case "fixed":
+                thal = 2;
+            break;
+            default:
+             thal = 0;
+            break;
+        }
+        switch(context.sex.ToLower())
+        {
+            case "male":
+                sex_male = 1;
+            break;
+            case "female":
+                sex_male = 0;
+            break;
+        }
+        age = context.age;
+    }
+    public HeartDiseaseModel(int a,int b, int c,int d, int e, int f, int g, int h, int i, int j, int k, int l, int m)
+    {
+        cp = a;
+        trestbps = b;
+        chol = c;
+        fbs = d;
+        restecg = e;
+        thalach = f;
+        exang = g;
+        oldpeak = h;
+        slope = i;
+        ca = j;
+        thal = k;
+        sex_male = l;
+        age = m;
+    }
+}
 
 public class LoginWrapper : MonoBehaviour
 {
@@ -29,7 +161,7 @@ public class LoginWrapper : MonoBehaviour
     //Info used to create services
     string versionDate = "2016-05-19";
     string versionDateAssistant = "2019-02-28";
-    string fileNameSaveFile = "temp";
+    string DialogueHash = "temp";
     string assistantID = "d9189588-6f94-47a7-bb10-63c2d7dc1181";
     string assistantSessionID;
 
@@ -73,10 +205,17 @@ public class LoginWrapper : MonoBehaviour
     public string lineSTT;
     public string savedLineSTT;
     public ExampleStreaming STTstreamer;
+    public Dictionary<string, byte[]> voiceLines;
     public bool listening = false;
     public bool finishedListening = false;
     public float cooldownSTT = 0f;
     public float limitSTT = 2f;
+
+    //related to the Model for heartdisease
+    public HeartDiseaseModel model;
+    public string modelResponse;
+    public bool obtainedModelResponse = false;
+    public bool setmodel = false;
 
 
 void Start()
@@ -94,7 +233,17 @@ void Start()
     Runnable.Run(SetUpToneAnalyser());
     Runnable.Run(SetUpSpeechToText());
     Runnable.Run(SetUpAssistant());
-    associatedSource = GameObject.FindGameObjectWithTag("Avatar").GetComponent<AudioSource>();
+    associatedSource = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<AudioSource>();
+    if(File.Exists(Application.persistentDataPath + "/voiceLines.eld"))
+    {
+        BinaryFormatter bf = new BinaryFormatter();
+        FileStream file = File.Open(Application.persistentDataPath + "/voiceLines.eld", FileMode.Open);
+        voiceLines = (Dictionary<string,byte[]>)bf.Deserialize(file);
+        file.Close();
+    }else{
+        voiceLines = new Dictionary<string, byte[]>();
+    }
+    
 }
 
 //This is related to the Speech to Text
@@ -199,11 +348,21 @@ private void OnSuccess<T>(DetailedResponse<T> resp, IBMError error)
 //writes the soundfile gotten from the Text To Speech then plays it.
 private void OnSynthesize(DetailedResponse<byte[]> resp, IBMError error)
 {
-    ttsSynthesing = true;
-    System.IO.File.WriteAllBytes("Assets/Resources/Sounds/" + fileNameSaveFile + ".ogg", resp.Result);
-    associatedSource.clip = Resources.Load<AudioClip>("Sounds/" + fileNameSaveFile);
+    if(!voiceLines.ContainsKey(DialogueHash))
+    {
+        voiceLines.Add(DialogueHash,resp.Result);
+    }
+    else{
+        Debug.LogWarning("This is not normal, the program shouldn't get here if the hash exists.");
+    }
     //associatedSource.PlayOneShot(Resources.Load<AudioClip>("Sounds/" + fileNameSaveFile));
-    ttsSynthesing = false;
+            BinaryFormatter bf = new BinaryFormatter();
+            Debug.Log("DataPath: " + Application.persistentDataPath);
+            FileStream file = File.Create(Application.persistentDataPath + "/voiceLines.eld");
+            bf.Serialize(file, voiceLines);
+            file.Close();
+            associatedSource.clip = WaveFile.ParseWAV(DialogueHash,resp.Result);
+            ttsSynthesing = false;
 }
 //Shows the result of the Speech To Text (Unused)
 /* 
@@ -242,25 +401,26 @@ private void OnToneAnalysis(DetailedResponse<ToneAnalysis> resp,IBMError error)
         UnityEngine.Debug.Log("Error, something happened.");
     }
 }
-//Unused but clearly usable
-private void LoadDirectlyFromCachedLines(string fileName)
-{
-    associatedSource.clip = Resources.Load<AudioClip>("Sounds/" + fileName);
-    
-}
 //Synthesizes the sentence
 public void SynthesizeSentence(string sentence)
 {
     activeFile = Regex.Replace(sentence,@"[^a-zA-Z0-9 -]","").ToLower();
     activeFile = Regex.Replace(activeFile, @"\s+", string.Empty);
-    fileNameSaveFile = activeFile;
-    if(File.Exists("Assets/Resources/Sounds/" + fileNameSaveFile + ".ogg"))
+    DialogueHash = activeFile;
+    using (MD5 md5Hash = MD5.Create())
+            {
+                DialogueHash = GetMd5Hash(md5Hash,DialogueHash);
+            }
+    ttsSynthesing = true;
+    if(voiceLines.ContainsKey(DialogueHash))
         {
-            associatedSource.clip = Resources.Load<AudioClip>("Sounds/" + fileNameSaveFile);
+            associatedSource.clip = WaveFile.ParseWAV(DialogueHash,voiceLines[DialogueHash]);
+            ttsSynthesing = false;
+            //associatedSource.PlayOneShot(Resources.Load<AudioClip>("Sounds/" + fileNameSaveFile));
         }
     else
         {
-            tts.Synthesize(OnSynthesize,sentence,"en-US_AllisonV3Voice",null,"audio/ogg;codecs=vorbis");
+            tts.Synthesize(OnSynthesize,sentence,null,null,"audio/wav");
         }
             if(PlayerPrefs.HasKey(activeFile))
     {
@@ -337,12 +497,69 @@ public void OnMessage(DetailedResponse<MessageResponse> response, IBMError error
         {
             goodbye = true;
         }
-    line = response.Result.Output.Generic[0].Text;
+    line = ParseText(response.Result.Output.Generic[0].Text);
     assDelivered = true;
 }
 
+//Parses out the JSON if received.
+private string ParseText(string text)
+{
+    if (text.Contains("["))
+        {
+            string[] splittext = text.Split('[');
+            UnityEngine.Debug.Log(splittext[1]);
+            model = new HeartDiseaseModel(Newtonsoft.Json.JsonConvert.DeserializeObject<HeartDiseaseContext>(splittext[1].Replace("]","")));
+            return splittext[0];
+        }
+    else
+    {
+        return text;
+    }
+}
 
+//Used to call the model using a button.
+public void testModel()
+{
+    //StartCoroutine(ContactHeartDiseaseModel(testModel));
+    model = new HeartDiseaseModel(0,145,174,0,1,125,1,3,0,0,3,1,70);
+    //ContactHeartDiseaseModel(model);
+    UnityEngine.Debug.Log("Set the Model Response.");
+    setmodel = true;
+}
 
+// https://stackoverflow.com/questions/16078254/create-audioclip-from-byte
+private float[] ConvertByteToFloatAudio(byte[] array) 
+            {
+                float[] floatArr = new float[array.Length / 4];
+                for (int i = 0; i < floatArr.Length; i++) 
+                {
+                    if (BitConverter.IsLittleEndian) 
+                        Array.Reverse(array, i * 4, 4);
+                    floatArr[i] = BitConverter.ToSingle(array, i * 4) / 0x80000000;
+                }
+                return floatArr;
+            }
+//https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.md5
+static string GetMd5Hash(MD5 md5Hash, string input)
+        {
+
+            // Convert the input string to a byte array and compute the hash.
+            byte[] data = md5Hash.ComputeHash(Encoding.UTF8.GetBytes(input));
+
+            // Create a new Stringbuilder to collect the bytes
+            // and create a string.
+            StringBuilder sBuilder = new StringBuilder();
+
+            // Loop through each byte of the hashed data 
+            // and format each one as a hexadecimal string.
+            for (int i = 0; i < data.Length; i++)
+            {
+                sBuilder.Append(data[i].ToString("x2"));
+            }
+
+            // Return the hexadecimal string.
+            return sBuilder.ToString();
+        }
 /* private void ContactHeartDiseaseModel(HeartDiseaseModel model)
     {
     try {
