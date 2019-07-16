@@ -20,132 +20,6 @@ using UnityEngine.Networking;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Cryptography;
 
-public class HeartDiseaseContext{
-    public string cp;
-    public int trestbps;
-    public int chol;
-    public string fbs;
-    public int restecg;
-    public int thalach;
-    public string exang;
-    public int oldpeak;
-    public int slope;
-    public int ca;
-    public string thal;
-    public string sex;
-    public int age;
-}
-
-public class HeartDiseaseModel{
-    public int cp;
-    public int trestbps;
-    public int chol;
-    public int fbs;
-    public int restecg;
-    public int thalach;
-    public int exang;
-    public int oldpeak;
-    public int slope;
-    public int ca;
-    public int thal;
-    public int sex_male;
-    public int age;
-
-    public HeartDiseaseModel(HeartDiseaseContext context)
-    {
-        switch(context.cp.ToLower())
-        {
-            case "typical angina":
-                cp = 0;
-            break;
-            case "atypical angina":
-                cp = 1;
-            break;
-            case "non-anginal":
-                cp = 2;
-            break;
-            case "asymptomatic":
-                cp = 3;
-            break;
-            default:
-             cp = 0;
-            break;
-        }
-        trestbps = context.trestbps;
-        chol = context.chol;
-        switch(context.fbs.ToLower())
-        {
-            case "yes":
-                fbs = 1;
-            break;
-            case "no":
-                fbs = 0;
-            break;
-            default:
-                fbs = 0;
-            break;
-        }
-        restecg = context.restecg;
-        thalach = context.thalach;
-        switch(context.exang.ToLower())
-        {
-            case "yes":
-                exang = 1;
-            break;
-            case "no":
-                exang = 0;
-            break;
-            default:
-                exang = 0;
-            break; 
-        }
-        oldpeak = context.oldpeak;
-        slope = context.slope;
-        ca = context.ca;
-        switch(context.thal.ToLower())
-        {
-            case "none":
-                thal = 0;
-            break;
-            case "reversible":
-                thal = 1;
-            break;
-            case "fixed":
-                thal = 2;
-            break;
-            default:
-             thal = 0;
-            break;
-        }
-        switch(context.sex.ToLower())
-        {
-            case "male":
-                sex_male = 1;
-            break;
-            case "female":
-                sex_male = 0;
-            break;
-        }
-        age = context.age;
-    }
-    public HeartDiseaseModel(int a,int b, int c,int d, int e, int f, int g, int h, int i, int j, int k, int l, int m)
-    {
-        cp = a;
-        trestbps = b;
-        chol = c;
-        fbs = d;
-        restecg = e;
-        thalach = f;
-        exang = g;
-        oldpeak = h;
-        slope = i;
-        ca = j;
-        thal = k;
-        sex_male = l;
-        age = m;
-    }
-}
-
 public class LoginWrapper : MonoBehaviour
 {
     // Wrapper Singleton
@@ -211,12 +85,6 @@ public class LoginWrapper : MonoBehaviour
     public float cooldownSTT = 0f;
     public float limitSTT = 2f;
 
-    //related to the Model for heartdisease
-    public HeartDiseaseModel model;
-    public string modelResponse;
-    public bool obtainedModelResponse = false;
-    public bool setmodel = false;
-
 
 void Start()
 {
@@ -233,7 +101,7 @@ void Start()
     Runnable.Run(SetUpToneAnalyser());
     Runnable.Run(SetUpSpeechToText());
     Runnable.Run(SetUpAssistant());
-    associatedSource = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<AudioSource>();
+    associatedSource = GameObject.FindGameObjectWithTag("Avatar").GetComponent<AudioSource>();
     if(File.Exists(Application.persistentDataPath + "/voiceLines.eld"))
     {
         BinaryFormatter bf = new BinaryFormatter();
@@ -420,7 +288,7 @@ public void SynthesizeSentence(string sentence)
         }
     else
         {
-            tts.Synthesize(OnSynthesize,sentence,null,null,"audio/wav");
+            tts.Synthesize(OnSynthesize,sentence,"en-US_AllisonV3Voice",null,"audio/wav");
         }
             if(PlayerPrefs.HasKey(activeFile))
     {
@@ -497,7 +365,7 @@ public void OnMessage(DetailedResponse<MessageResponse> response, IBMError error
         {
             goodbye = true;
         }
-    line = ParseText(response.Result.Output.Generic[0].Text);
+    line = response.Result.Output.Generic[0].Text;
     assDelivered = true;
 }
 
@@ -508,23 +376,13 @@ private string ParseText(string text)
         {
             string[] splittext = text.Split('[');
             UnityEngine.Debug.Log(splittext[1]);
-            model = new HeartDiseaseModel(Newtonsoft.Json.JsonConvert.DeserializeObject<HeartDiseaseContext>(splittext[1].Replace("]","")));
+            //model = new HeartDiseaseModel(Newtonsoft.Json.JsonConvert.DeserializeObject<HeartDiseaseContext>(splittext[1].Replace("]","")));
             return splittext[0];
         }
     else
     {
         return text;
     }
-}
-
-//Used to call the model using a button.
-public void testModel()
-{
-    //StartCoroutine(ContactHeartDiseaseModel(testModel));
-    model = new HeartDiseaseModel(0,145,174,0,1,125,1,3,0,0,3,1,70);
-    //ContactHeartDiseaseModel(model);
-    UnityEngine.Debug.Log("Set the Model Response.");
-    setmodel = true;
 }
 
 // https://stackoverflow.com/questions/16078254/create-audioclip-from-byte
