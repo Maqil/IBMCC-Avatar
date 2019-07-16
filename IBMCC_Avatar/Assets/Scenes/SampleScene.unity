@@ -149,7 +149,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d4a56705b4b540442a5c7ee9caf0061e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  line: Testing
+  line: Hi, and Welcome to IBM Client Center! My name is Alina and I will answer any
+    question you could have.
   speakSpeed: 0.05
   speaking: 0
   finishedSpeaking: 0
@@ -939,6 +940,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 282765893830472859, guid: 6855e715dccee3e4a948413a9339aae5,
+        type: 3}
+      propertyPath: m_audioClip
+      value: 
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6855e715dccee3e4a948413a9339aae5, type: 3}
