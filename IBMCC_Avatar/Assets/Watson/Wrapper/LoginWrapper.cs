@@ -11,12 +11,9 @@ using System.Text.RegularExpressions;
 using IBM.Watson.SpeechToText.V1;
 using IBM.Watson.Assistant.V2;
 using IBM.Watson.Assistant.V2.Model;
-using IBM.Cloud.SDK.DataTypes;
 using IBM.Watsson.Examples;
 using System;
-using System.Net.Http;
 using System.Text;
-using UnityEngine.Networking;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Cryptography;
 
@@ -36,7 +33,8 @@ public class LoginWrapper : MonoBehaviour
     string versionDate = "2016-05-19";
     string versionDateAssistant = "2019-02-28";
     string DialogueHash = "temp";
-    string assistantID = "d9189588-6f94-47a7-bb10-63c2d7dc1181";
+    // string assistantID = "d9189588-6f94-47a7-bb10-63c2d7dc1181";
+    string assistantID = "8cb83308-8258-4a52-87dc-eaa398055c8e";
     string assistantSessionID;
 
     //These are useful sometimes
@@ -145,7 +143,8 @@ IEnumerator SetUpTTS()
     //  authorization token using the IamApiKey. It defaults to https://iam.cloud.ibm.com/identity/token
     TokenOptions iamTokenOptions = new TokenOptions()
     {
-        IamApiKey = "q0pbfjAdkvRwz_qFv3mbFvSZ4a4xA9--nlPPhtyF5D7-"
+        IamApiKey = "pO43Plpbv4lvnCzYhIQJHQ--UzDIoaVtt2RlYYC5vpYa"
+        //IamApiKey = "q0pbfjAdkvRwz_qFv3mbFvSZ4a4xA9--nlPPhtyF5D7-"
     };
     //  Create credentials using the IAM token options
     Credentials credentials = new Credentials(iamTokenOptions, "https://gateway-lon.watsonplatform.net/text-to-speech/api");
@@ -178,8 +177,9 @@ IEnumerator SetUpAssistant()
 {
     TokenOptions iamTokenOptions = new TokenOptions()
         {
-            IamApiKey = "PG_NxLAWuKYyr2OfIsu91wTsWbHg43Je19YrEuORUFXT"
-        };
+        //IamApiKey = "PG_NxLAWuKYyr2OfIsu91wTsWbHg43Je19YrEuORUFXT"
+        IamApiKey = "I70Woj3sppRvn12x3dENKfljuhi_P_qY-BJJRjy3T2tL"
+    };
 
     Credentials credentials = new Credentials(iamTokenOptions, "https://gateway-lon.watsonplatform.net/assistant/api");
     while (!credentials.HasIamTokenData())
@@ -187,15 +187,16 @@ IEnumerator SetUpAssistant()
     
     ass = new AssistantService(versionDateAssistant,credentials);
     assStarted = true;
-    ass.CreateSession(OnSessionCreationResponse,"d9189588-6f94-47a7-bb10-63c2d7dc1181");
+    ass.CreateSession(OnSessionCreationResponse,assistantID);
 }
 
 IEnumerator SetUpSpeechToText()
 {
         TokenOptions iamTokenOptions = new TokenOptions()
     {
-        IamApiKey = "liOt3C4cqS86vauIsjDd11uAny_ezrjp2tarts5LYrmi"
-    };
+            IamApiKey = "pS_euGwN75JNCi4nKzd9EKPnkuaWQnY0qVA5v6rAC0cv"
+            //IamApiKey = "liOt3C4cqS86vauIsjDd11uAny_ezrjp2tarts5LYrmi"
+        };
 
     Credentials credentials = new Credentials(iamTokenOptions,"https://gateway-lon.watsonplatform.net/speech-to-text/api");
     while (!credentials.HasIamTokenData())
@@ -232,15 +233,7 @@ private void OnSynthesize(DetailedResponse<byte[]> resp, IBMError error)
             associatedSource.clip = WaveFile.ParseWAV(DialogueHash,resp.Result);
             ttsSynthesing = false;
 }
-//Shows the result of the Speech To Text (Unused)
-/* 
-private void OnTextify(DetailedResponse<string> resp, IBMError error)
-{
-    sttTextualizing = true;
-    STTOutput = resp.Result;
-    sttTextualizing = false;
-}
-*/
+
 //calculates & saves the Tone Analysis.
 private void OnToneAnalysis(DetailedResponse<ToneAnalysis> resp,IBMError error)
 {
@@ -376,7 +369,6 @@ private string ParseText(string text)
         {
             string[] splittext = text.Split('[');
             UnityEngine.Debug.Log(splittext[1]);
-            //model = new HeartDiseaseModel(Newtonsoft.Json.JsonConvert.DeserializeObject<HeartDiseaseContext>(splittext[1].Replace("]","")));
             return splittext[0];
         }
     else
@@ -385,18 +377,6 @@ private string ParseText(string text)
     }
 }
 
-// https://stackoverflow.com/questions/16078254/create-audioclip-from-byte
-private float[] ConvertByteToFloatAudio(byte[] array) 
-            {
-                float[] floatArr = new float[array.Length / 4];
-                for (int i = 0; i < floatArr.Length; i++) 
-                {
-                    if (BitConverter.IsLittleEndian) 
-                        Array.Reverse(array, i * 4, 4);
-                    floatArr[i] = BitConverter.ToSingle(array, i * 4) / 0x80000000;
-                }
-                return floatArr;
-            }
 //https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.md5
 static string GetMd5Hash(MD5 md5Hash, string input)
         {
@@ -418,45 +398,6 @@ static string GetMd5Hash(MD5 md5Hash, string input)
             // Return the hexadecimal string.
             return sBuilder.ToString();
         }
-/* private void ContactHeartDiseaseModel(HeartDiseaseModel model)
-    {
-    try {
-         ProcessStartInfo process = new ProcessStartInfo("C:\\Windows\\system32\\cmd.exe","curl -k -X POST \\ https://169.51.49.149:31843/dmodel/v1/heart/pyscript/reglog/score \\ -H 'Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im1vdWFkIiwicGFja2FnZU5hbWUiOiJIZWFsdGhjYXJlIiwicGFja2FnZVJvdXRlIjoiaGVhcnQiLCJpYXQiOjE1NjI1NzkzMDB9.nJOhhpNIGNhWBXSF2q8cSeahbzX_dq4Wpgv_5XJl4htH1m9mUwCqCspetA-9VFWIXeslkAG-_t9iWW4zJ9C2lyuXVQwTE4nr7qseFIg42HtYUKnkzRLmBTPV4QbKl6NXtAZqkRPa65CTBaLZZk7uCuXBlZJU3xdrLEa8S8is3Xzz6Y5Fbm_SRC9MGNlFV0GjF8do9Nsl1RMKXeeRV3QGZfxe6lU5kH94aPnLCB875W79ihdDYMBFOiyFuH1h_S5wGY4NJJpM5GD9ZHk8kb5aY9DRTZ0GtctVsokyejUZBlWKyR2lUSVlPKU-bQM273G7B8D2AOsH7W1P9g8gO26smQ' \\ -H 'Cache-Control: no-cache' \\ -H 'Content-Type: application/json' \\ -d '" + "{\"args\":{\"input_json\":" +Newtonsoft.Json.JsonConvert.SerializeObject(model) + "}}'");
-         process.CreateNoWindow = true;
-         process.UseShellExecute = false;
-         process.RedirectStandardError = true;
-         Process myProcess = Process.Start(process);
-         myProcess.WaitForExit();
-         int ExitCode = myProcess.ExitCode;
-         string output = myProcess.StandardError.ReadToEnd();
-         UnityEngine.Debug.Log(ExitCode);
-         UnityEngine.Debug.Log(output);
-         } catch (Exception e){
-             print(e);        
-         }
-    }*/
-
-/* private async System.Threading.Tasks.Task ContactHeartDiseaseModelAsync(HeartDiseaseModel mode)
-{
-    var handler = new HttpClientHandler();
-    handler.ServerCertificateCustomValidationCallback = (requestMessage, certificate, chain, policyErrors) => true; 
-    using (var httpClient = new HttpClient(handler))
-    {
-        using (var request = new HttpRequestMessage(new HttpMethod("POST"), "https://169.51.49.149:31843/dmodel/v1/test/pyscript/reglog/score"))
-        {
-            request.Headers.TryAddWithoutValidation("Cache-Control", "no-cache");
-            request.Headers.TryAddWithoutValidation("Authorization", "Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im1vdWFkIiwicGFja2FnZU5hbWUiOiJIZWFsdGhjYXJlIiwicGFja2FnZVJvdXRlIjoidGVzdCIsImlhdCI6MTU2MDc4MDYwNX0.kNHGHn8ELuHc3ix1kgDXINoz-gKszbbU8JngdlCsPBEQXuBK-yBOAoXIJPEs5zRxj2yb8CURZb6BCMMxgcVtQZpVPRFOODo4okiUhl_ioGgpZ6KQ7951u6FgY4gDqvbB5EZzYYAAgzhvWmOjCOYBVhpQbS7jU_3kh9T8zApRGWdlDNtkTRxzMRfP8-p0kk-BwmibAOxIuC4MuSsJ_P3xd5UMKTVIi47DDRS1kMZHlhxu2xEOy5KzqiKDoyW_MC6dEFuCTb3mAwCO12RBrXeaC0iBFOoKAqnxXjc7jVeT61jK4uZbRqFmnYA4V6Ls0oFV29jE5_M5_Xvo43W88T0vSQ"); 
-
-            request.Content = new StringContent("{\"args\":{\"input_json\":" + Newtonsoft.Json.JsonConvert.SerializeObject(mode) + "}}", Encoding.UTF8, "application/json"); 
-
-            var response = await httpClient.SendAsync(request);
-            Debug.Log(response);
-            modelResponse = response.ToString();
-            obtainedModelResponse = true;
-        }
-    }
-}*/
-
 
 public void OnSessionCreationResponse(DetailedResponse<SessionResponse> response, IBMError error)
 {
