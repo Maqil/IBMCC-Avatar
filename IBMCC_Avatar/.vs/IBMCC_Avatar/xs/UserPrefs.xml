@@ -1,0 +1,33 @@
+﻿<Properties StartupConfiguration="{25D07CBC-6F76-E746-8626-B4ED0D7C0A17}|">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Watson/Wrapper/LoginWrapper.cs">
+    <Files>
+      <File FileName="Assets/Watson/Wrapper/RunLog.cs" Line="20" Column="1" />
+      <File FileName="Assets/Watson/Wrapper/LoginWrapper.cs" Line="1" Column="1" />
+    </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State name="__root__">
+          <Node name="IBMCC_Avatar" expanded="True">
+            <Node name="Assets" expanded="True">
+              <Node name="IBMSdkCore" expanded="True">
+                <Node name="Debug" expanded="True" />
+              </Node>
+              <Node name="Watson" expanded="True">
+                <Node name="Wrapper" expanded="True">
+                  <Node name="LoginWrapper.cs" selected="True" />
+                </Node>
+              </Node>
+            </Node>
+          </Node>
+        </State>
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.ItemProperties.Assembly-CSharp PreferredExecutionTarget="72d0159e-131c-4479-a50a-f577d14b2412" />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MultiItemStartupConfigurations />
+</Properties>
