@@ -71,6 +71,7 @@
      <Compile Include="Assets\Crazy Minnow Studio\SALSA with RandomEyes\Examples\Scripts\CSharp\CM_Waypoints.cs" />
      <Compile Include="Assets\DialogueManager.cs" />
      <Compile Include="Assets\ImageMouthWhenToSpeak.cs" />
+     <Compile Include="Assets\LogIcon_AnimatorCompanion.cs" />
      <Compile Include="Assets\TextBox_WriteAsItGoes.cs" />
      <None Include="Assets\TextMesh Pro\Resources\Shaders\TMP_SDF-Surface-Mobile.shader" />
      <None Include="Assets\TextMesh Pro\Resources\LineBreaking Leading Characters.txt" />
