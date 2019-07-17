@@ -40,6 +40,7 @@ public class LoginWrapper : MonoBehaviour
     //These are useful sometimes
     public AudioClip loadableClip;
     AudioSource associatedSource;
+    TextLogControl associatedLogControl;
 
     //string for the Speech to Text
     public string STTOutput = "temp";
@@ -100,6 +101,7 @@ void Start()
     Runnable.Run(SetUpSpeechToText());
     Runnable.Run(SetUpAssistant());
     associatedSource = GameObject.FindGameObjectWithTag("Avatar").GetComponent<AudioSource>();
+    associatedLogControl = GameObject.FindGameObjectWithTag("LogControl").GetComponent<TextLogControl>();
     if(File.Exists(Application.persistentDataPath + "/voiceLines.eld"))
     {
         BinaryFormatter bf = new BinaryFormatter();
@@ -121,7 +123,9 @@ void Update()
         if(cooldownSTT >= limitSTT && !String.IsNullOrEmpty(savedLineSTT))
         {
             STTstreamer.StopRecording();
-            SendLineAssistant(lineSTT.Trim(Environment.NewLine.ToCharArray()));
+            string tempString = lineSTT.Trim(Environment.NewLine.ToCharArray());
+            associatedLogControl.LogText(tempString,new Color(252f/255, 161f/255, 157f/255));
+            SendLineAssistant(tempString);
             savedLineSTT = "";
             lineSTT = "";
             listening = false;
@@ -358,7 +362,9 @@ public void OnMessage(DetailedResponse<MessageResponse> response, IBMError error
         {
             goodbye = true;
         }
+        string tempText = 
     line = response.Result.Output.Generic[0].Text;
+    associatedLogControl.LogText(line, new Color(171f/255, 221f/255, 237f/255));
     assDelivered = true;
 }
 
