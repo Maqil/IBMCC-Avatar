@@ -139,6 +139,11 @@ void Update()
             cooldownSTT = 0f;
             savedLineSTT = lineSTT;
         }
+        if(!STTstreamer.Active && cooldownSTT > 2f)
+        {
+            STTstreamer.StartRecording();
+            cooldownSTT = 0f;
+        }
     }
 }
 IEnumerator SetUpTTS()
