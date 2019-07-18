@@ -141,6 +141,8 @@ void Update()
         }
         if(!STTstreamer.Active && cooldownSTT > 2f)
         {
+            STTstreamer = new ExampleStreaming();
+            STTstreamer.SetServiceFromWrapper(stt);
             STTstreamer.StartRecording();
             cooldownSTT = 0f;
         }
@@ -367,7 +369,6 @@ public void OnMessage(DetailedResponse<MessageResponse> response, IBMError error
         {
             goodbye = true;
         }
-        string tempText = 
     line = response.Result.Output.Generic[0].Text;
     associatedLogControl.LogText(line, new Color(171f/255, 221f/255, 237f/255));
     assDelivered = true;
